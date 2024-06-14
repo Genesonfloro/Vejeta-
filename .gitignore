@@ -16,3 +16,79 @@ bin-release/
 # Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
 # should NOT be excluded as they contain compiler settings and other important
 # information for Eclipse / Flash Builder.
+import zipfile
+import os
+
+# Define the paths for the addon
+addon_folder = 'plugin.video.seuaddon'
+resources_folder = os.path.join(addon_folder, 'resources')
+
+# Create the necessary directory structure
+os.makedirs(resources_folder, exist_ok=True)
+
+# Create addon.xml file
+addon_xml_content = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.seuaddon" name="Seu Addon" version="1.0.0" provider-name="Seu Nome">
+    <extension point="xbmc.python.pluginsource" library="addon.py" />
+    <extension point="xbmc.addon.metadata">
+        <summary>Um addon de vídeo simples</summary>
+        <description>Descrição do seu addon</description>
+        <platform>all</platform>
+        <language>pt_br</language>
+    </extension>
+</addon>
+'''
+with open(os.path.join(addon_folder, 'addon.xml'), 'w') as file:
+    file.write(addon_xml_content)
+
+# Create addon.py file
+addon_py_content = '''import sys
+import xbmcaddon
+import xbmcplugin
+import xbmcgui
+
+ADDON = xbmcaddon.Addon()
+HANDLE = int(sys.argv[1])
+
+def listar_videos():
+    videos = [
+        {"name": "Anime 1", "url": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"},
+        {"name": "Filme 1", "url": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"},
+    ]
+
+    for video in videos:
+        list_item = xbmcgui.ListItem(label=video["name"])
+        xbmcplugin.addDirectoryItem(handle=HANDLE, url=video["url"], listitem=list_item, isFolder=False)
+
+    xbmcplugin.endOfDirectory(HANDLE)
+
+if __name__ == '__main__':
+    listar_videos()
+'''
+with open(os.path.join(addon_folder, 'addon.py'), 'w') as file:
+    file.write(addon_py_content)
+
+# Create settings.xml file (optional)
+settings_xml_content = '''<settings>
+    <category label="Configurações do Add-on">
+        <setting id="qualidade" type="labelenum" label="Qualidade do vídeo" default="0" values="Baixa|Média|Alta"/>
+    </category>
+</settings>
+'''
+with open(os.path.join(resources_folder, 'settings.xml'), 'w') as file:
+    file.write(settings_xml_content)
+
+# Create icon.png and fanart.jpg placeholder files
+with open(os.path.join(addon_folder, 'icon.png'), 'wb') as file:
+    file.write(b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\nIDAT\x08\xd7c\xf8\x0f\x00\x01\x01\x01\x00\x18\xdd\x1d\xe7\x00\x00\x00\x00IEND\xaeB`\x82')
+with open(os.path.join(addon_folder, 'fanart.jpg'), 'wb') as file:
+    file.write(b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x00\x00\x01\x00\x01\x00\x00\xff\xdb\x00C\x00\x08\x06\x06\x07\x06\x05\x08\x07\x07\x07\x09\x09\x08\n\x0c\x14\x0c\n\x0b\x0b\n\x1e\x12\x13\x0f\x14!\x1e"$!#\x1f\x1e(,6,2\x1e \x1e23<75<:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8:8\xff\xc0\x00\x11\x08\x00\x01\x00\x01\x03\x01"\x00\x02\x11\x01\x03\x11\x01\xff\xc4\x00\x15\x00\x00\x01\x05\x01\x01\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x02\x03\x04\x05\x06\x07\x08\xff\xc4\x00\x14\x01\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\xff\xda\x00\x0c\x03\x01\x00\x02\x11\x03\x11\x00?\x00\xd2\xcf \xff\xd9')
+
+# Create a zip file
+zip_file_path = '/mnt/data/plugin.video.seuaddon.zip'
+with zipfile.ZipFile(zip_file_path, 'w') as zipf:
+    for root, dirs, files in os.walk(addon_folder):
+        for file in files:
+            zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), addon_folder))
+
+zip_file_path
